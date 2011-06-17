@@ -20,6 +20,7 @@ setup(
     keywords = ["sftp", "ssh", "sshfs", "gtk"],
     license = "BSD",
     packages = ['sftpman_gtk'],
+    install_requires = ['sftpman'],
     entry_points="""
     [console_scripts]
     sftpman-gtk = sftpman_gtk.launcher:main

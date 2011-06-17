@@ -91,6 +91,7 @@ Dependencies
 - `sshfs`_
 - Python 2.6+
 - PyGTK
+- `sftpman`_
 
 
 Known limitations
