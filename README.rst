@@ -105,5 +105,5 @@ Known limitations
 .. _sshfs: http://fuse.sourceforge.net/sshfs.html
 .. _ArchLinux: http://www.archlinux.org/
 .. _AUR: https://wiki.archlinux.org/index.php/AUR
-.. _sftpman-gtk AUR package: http://aur.archlinux.org/packages.php?ID=49211
+.. _sftpman-gtk AUR package: http://aur.archlinux.org/packages.php?ID=49959
 .. _sftpman: https://github.com/spantaleev/sftpman/
