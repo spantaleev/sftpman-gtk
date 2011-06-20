@@ -8,7 +8,7 @@ import gtk
 import gobject
 
 from sftpman.model import EnvironmentModel, SystemModel, SystemControllerModel
-from sftpman.exception import SftpException
+from sftpman.exception import SftpException, SftpMountException
 from sftpman.helper import shell_exec
 
 from helper import open_file_browser, create_button, show_warning_message
@@ -34,9 +34,23 @@ class SftpManGtk(object):
         if controller.mounted:
             open_file_browser(controller.mount_point_local)
 
-    def handler_mount_by_id(self, btn, system_id):
+    def _handle_mount(self, system_id):
         controller = self._get_system_controller_by_id(system_id)
-        controller.mount()
+        try:
+            controller.mount()
+        except SftpMountException, e:
+            msg = ('Mounting failed for {system_id}.\n\n'
+                   'Mount command:\n{cmd}\n\n'
+                   'Command output:\n{output}')
+            msg = msg.format(
+                system_id = system_id,
+                cmd = e.mount_cmd,
+                output = e.mount_cmd_output,
+            )
+            show_warning_message(msg)
+
+    def handler_mount_by_id(self, btn, system_id):
+        self._handle_mount(system_id)
         self.refresh_list()
 
     def handler_unmount_by_id(self, btn, system_id):
@@ -46,8 +60,7 @@ class SftpManGtk(object):
 
     def handler_mount_all(self, btn):
         for system_id in self.environment.get_available_ids():
-            controller = self._get_system_controller_by_id(system_id)
-            controller.mount()
+            self._handle_mount(system_id)
         self.refresh_list()
 
     def handler_unmount_all(self, btn):
