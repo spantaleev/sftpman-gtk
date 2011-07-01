@@ -1,11 +1,9 @@
 [Desktop Entry]
-Encoding=UTF-8
 Name=SftpMan
-Comment=SftpMan
+Comment=Mount SSHFS/SFTP filesystems
 Exec=sftpman-gtk
 Icon=sftpman
 Terminal=false
 Type=Application
 StartupNotify=true
-Categories=GTK;System
-Name[en_US]=SftpMan
+Categories=GTK;Filesystem;System;
