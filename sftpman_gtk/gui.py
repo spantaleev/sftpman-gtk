@@ -167,9 +167,9 @@ class SftpManGtk(object):
         self.window.set_position(gtk.WIN_POS_CENTER)
         self.window.connect('destroy', self.handler_destroy)
 
-        icon_file = os.path.join(os.path.dirname(__file__), '..', 'sftpman.png')
+        icon_file = os.path.join(os.path.dirname(__file__), '..', 'sftpman-gtk.png')
         if not os.path.exists(icon_file):
-            icon_file = '/usr/share/pixmaps/sftpman.png'
+            icon_file = '/usr/share/pixmaps/sftpman-gtk.png'
             if not os.path.exists(icon_file):
                 icon_file = None
         if icon_file is not None:
