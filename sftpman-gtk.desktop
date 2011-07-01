@@ -2,7 +2,7 @@
 Name=SftpMan
 Comment=Mount SSHFS/SFTP filesystems
 Exec=sftpman-gtk
-Icon=sftpman
+Icon=sftpman-gtk
 Terminal=false
 Type=Application
 StartupNotify=true
