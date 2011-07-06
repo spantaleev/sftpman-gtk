@@ -322,10 +322,11 @@ class RecordRenderer(object):
                 show_warning_message(msg)
 
     def handler_delete(self, btn):
-        dialog = Gtk.MessageDialog(self.window_obj.window, Gtk.DialogFlags.MODAL, Gtk.MessageType.QUESTION, Gtk.ButtonsType.YES_NO, 'Are you sure?')
-        dialog.set_title('Delete %s?' % self.system.id)
-        dialog.show()
-
+        text = 'Delete definition for `%s`?' % self.system.id
+        dialog = Gtk.MessageDialog(self.window_obj.window, Gtk.DialogFlags.MODAL, Gtk.MessageType.QUESTION, Gtk.ButtonsType.NONE, text)
+        dialog.add_button(Gtk.STOCK_CANCEL, Gtk.ResponseType.NO)
+        dialog.add_button(Gtk.STOCK_DELETE, Gtk.ResponseType.YES)
+        dialog.set_title(text)
         response = dialog.run()
         dialog.destroy()
         if response == Gtk.ResponseType.YES:
