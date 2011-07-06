@@ -89,8 +89,8 @@ Dependencies
 ------------
 
 - `sshfs`_
-- Python 2.6+
-- `PyGObject`_
+- Python 2.7+
+- `PyGObject`_ (for Python 2.x or Python 3.x)
 - GTK3
 - `sftpman`_
 

@@ -11,7 +11,7 @@ from setuptools import setup
 
 setup(
     name = "sftpman-gtk",
-    version = '0.2.0',
+    version = '0.3.0',
     description = "A GTK frontend for SftpMan, which helps you mount SFTP file systems.",
     long_description = __doc__,
     author = "Slavi Pantaleev",
@@ -20,7 +20,7 @@ setup(
     keywords = ["sftp", "ssh", "sshfs", "gtk"],
     license = "BSD",
     packages = ['sftpman_gtk'],
-    install_requires = ['sftpman'],
+    install_requires = ['sftpman>=0.5.0'],
     entry_points="""
     [console_scripts]
     sftpman-gtk = sftpman_gtk.launcher:main
@@ -28,7 +28,8 @@ setup(
     zip_safe = False,
     classifiers = [
         "Programming Language :: Python",
-        "Development Status :: 4 - Beta",
+        "Programming Language :: Python :: 3",
+        "Development Status :: 5 - Production/Stable",
         "Environment :: X11 Applications :: GTK",
         "Intended Audience :: Developers",
         "Intended Audience :: System Administrators",

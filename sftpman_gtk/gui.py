@@ -12,7 +12,7 @@ from sftpman.model import EnvironmentModel, SystemModel, SystemControllerModel
 from sftpman.exception import SftpException, SftpMountException
 from sftpman.helper import shell_exec
 
-from helper import open_file_browser, create_button, show_warning_message, \
+from .helper import open_file_browser, create_button, show_warning_message, \
      create_hbox, create_vbox, create_table
 
 
@@ -40,7 +40,7 @@ class SftpManGtk(object):
         controller = self._get_system_controller_by_id(system_id)
         try:
             controller.mount()
-        except SftpMountException, e:
+        except SftpMountException as e:
             msg = ('Mounting failed for {system_id}.\n\n'
                    'Mount command:\n{cmd}\n\n'
                    'Command output:\n{output}')
