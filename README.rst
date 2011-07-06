@@ -24,7 +24,7 @@ All systems are mounted under ``/mnt/sshfs/``. For the ``my-machine`` machine, t
 Installing on ArchLinux
 -----------------------
 
-On `ArchLinux`_, there's an official `sftpman-gtk AUR package`_. To install using ``yaourt``::
+On `ArchLinux`_, there's an official `sftpman-gtk AUR package`_. To install using `yaourt`_::
 
     yaourt -S sftpman-gtk
 
@@ -36,12 +36,13 @@ Optional dependencies will be suggested to you upon install.
 Installing on other distributions
 ---------------------------------
 
-For other distributions you can install using **pip**::
+For other distributions you can install from `PyPI`_ using `pip`_::
 
     pip install sftpman-gtk
 
-You'll need to install ``pygtk`` manually, but maybe you already have that installed.
-Installing ``pygtk`` from **pip** would not work, because some of its dependencies are not available there.
+You'll need to install ``pygobject`` manually, but most probably you already have it installed.
+Installing ``pygobject`` from **PyPI** is not supported.
+If you don't have it installed, try to look for it in your distribution's package manager.
 
 You also need to install `sshfs`_ yourself.
 
@@ -49,8 +50,8 @@ You also need to install `sshfs`_ yourself.
 Post-installation tips
 ----------------------
 
-If the SSH keys that you'll use for authentication are password-protected (as they should be)
-and you want the GUI Application to prompt you for a password,
+If you're authenticating using passwords or password-protected SSH keys
+and you want the GUI Application to prompt you for those passwords,
 you may need to install the `openssh-askpass` package (or whatever it's called) for your distribution.
 Some distributions have that installed by default.
 
@@ -62,15 +63,14 @@ In order to setup an sftp system for further use (mounting/unmounting) you need 
 
 - Hostname/IP
 - Port (defaults to 22)
-- Remote username/login
-- SSH private key (you need its corresponding public key added to the remote user's .authorized_keys file)
+- Username to authenticate with
+- Authentication method (using passwords or public keys)
+- SSH private key (if you're authenticating using SSH keys. You will also need its corresponding public key added to the remote user's .authorized_keys file)
 - Remote mount point (the remote directory you want mounted on your system)
 - Options (options to pass to sshfs if you want something more advanced)
 - Run before mount (a command to execute before mounting)
 
-We currently don't (and probably never will) support mounting by using passwords (instead of keys).
-
-If your SSH private key requires a password to use (as it should), you'll be asked for it.
+If you're using password-based authentication or a password-protected key, you'll be asked for the password at the time of mounting.
 
 The "Run before mount" command allows you to do whatever init stuff you want.
 I'm using it to initialize my ssh-agent (by adding my key there), so that I only have to type in the key password once.
@@ -90,14 +90,14 @@ Dependencies
 
 - `sshfs`_
 - Python 2.6+
-- PyGTK
+- `PyGObject`_
+- GTK3
 - `sftpman`_
 
 
 Known limitations
 -----------------
 
-- Doesn't support password authentication, only SSH keys
 - Doesn't support mounting in a location different than ``/mnt/sshfs/``
 - All logic runs in the GUI thread, which can make the GUI freeze for a while
 
@@ -107,3 +107,7 @@ Known limitations
 .. _AUR: https://wiki.archlinux.org/index.php/AUR
 .. _sftpman-gtk AUR package: http://aur.archlinux.org/packages.php?ID=49959
 .. _sftpman: https://github.com/spantaleev/sftpman/
+.. _PyGObject: https://live.gnome.org/PyGObject
+.. _pip: http://guide.python-distribute.org/pip.html
+.. _PyPI: http://pypi.python.org/pypi
+.. _yaourt: https://wiki.archlinux.org/index.php/Yaourt
