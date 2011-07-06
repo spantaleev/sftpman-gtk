@@ -145,7 +145,7 @@ class SftpManGtk(object):
         hbox = Gtk.HBox()
         hbox.pack_start(create_button('New', Gtk.STOCK_ADD, onclick=self.handler_create_new), True, True, 0)
         hbox.pack_start(create_button('Mount all', Gtk.STOCK_CONNECT, onclick=self.handler_mount_all), True, True, 0)
-        hbox.pack_start(create_button('Unmount all', Gtk.STOCK_CONNECT, onclick=self.handler_unmount_all), True, True, 0)
+        hbox.pack_start(create_button('Unmount all', Gtk.STOCK_DISCONNECT, onclick=self.handler_unmount_all), True, True, 0)
         return hbox
 
     def _create_list_container(self):
