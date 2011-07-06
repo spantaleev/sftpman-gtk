@@ -1,4 +1,6 @@
-import gtk
+from gi.repository import Gtk
+import gi
+gi.require_version('Gtk', '3.0')
 
 def open_file_browser(path):
     """Opens a file browser at the specified path."""
@@ -7,20 +9,20 @@ def open_file_browser(path):
 
 
 def create_button(text, stock_image_id=None, onclick=None):
-    hbox = gtk.HBox()
+    hbox = Gtk.HBox()
 
     if stock_image_id is not None:
-        icon = gtk.Image()
-        icon.set_from_stock(stock_image_id, gtk.ICON_SIZE_SMALL_TOOLBAR)
-        hbox.pack_start(icon)
+        icon = Gtk.Image()
+        icon.set_from_stock(stock_image_id, Gtk.IconSize.SMALL_TOOLBAR)
+        hbox.pack_start(icon, True, True, 0)
 
-    label = gtk.Label()
+    label = Gtk.Label()
     label.set_text(text)
     label.set_alignment(0, 0)
 
-    hbox.pack_start(label)
+    hbox.pack_start(label, True, True, 0)
 
-    btn = gtk.Button()
+    btn = Gtk.Button()
     btn.add(hbox)
 
     if onclick is not None:
@@ -30,8 +32,8 @@ def create_button(text, stock_image_id=None, onclick=None):
 
 
 def show_warning_message(text):
-    md = gtk.MessageDialog(None, gtk.DIALOG_DESTROY_WITH_PARENT, gtk.MESSAGE_WARNING,
-        gtk.BUTTONS_CLOSE, text)
+    md = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.WARNING,
+        Gtk.ButtonsType.CLOSE, text)
     md.run()
     md.destroy()
 
