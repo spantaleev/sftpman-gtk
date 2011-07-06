@@ -166,6 +166,8 @@ class SftpManGtk(object):
         self.window = Gtk.Window()
         self.window.set_title('SftpMan')
         self.window.resize(550, 350)
+        # Add some padding, because of the GTK3 window size grip
+        self.window.set_border_width(12)
         self.window.set_position(Gtk.WindowPosition.CENTER)
         self.window.connect('destroy', self.handler_destroy)
 
