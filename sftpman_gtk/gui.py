@@ -362,7 +362,7 @@ class RecordRenderer(object):
         title = Gtk.Label()
         title_label = 'System editing' if self.added else 'System adding'
         title.set_markup('<big>%s</big>' % title_label)
-        vbox.pack_start(title, True, True, 0)
+        vbox.pack_start(title, False, False, 0)
 
         fields_stored = []
         fields = self.get_fields()
