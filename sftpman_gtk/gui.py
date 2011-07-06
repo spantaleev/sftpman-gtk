@@ -12,7 +12,8 @@ from sftpman.model import EnvironmentModel, SystemModel, SystemControllerModel
 from sftpman.exception import SftpException, SftpMountException
 from sftpman.helper import shell_exec
 
-from helper import open_file_browser, create_button, show_warning_message
+from helper import open_file_browser, create_button, show_warning_message, \
+     create_hbox, create_vbox
 
 
 class SftpManGtk(object):
@@ -88,7 +89,7 @@ class SftpManGtk(object):
         for childHbox in self.list_container.get_children():
             self.list_container.remove(childHbox)
 
-        separator = Gtk.HBox()
+        separator = create_hbox()
         separator.set_size_request(10, 25)
         self.list_container.pack_start(separator, False, False, 0)
 
@@ -96,7 +97,7 @@ class SftpManGtk(object):
         for system_id in ids_available:
             is_mounted = system_id in ids_mounted
 
-            hbox = Gtk.HBox()
+            hbox = create_hbox()
 
             icon = Gtk.Image()
             icon.set_from_stock(Gtk.STOCK_YES if is_mounted else Gtk.STOCK_NO, Gtk.IconSize.SMALL_TOOLBAR)
@@ -142,7 +143,7 @@ class SftpManGtk(object):
         self.list_container.show_all()
 
     def _create_tool_box(self):
-        hbox = Gtk.HBox()
+        hbox = create_hbox()
         hbox.pack_start(create_button('New', Gtk.STOCK_ADD, onclick=self.handler_create_new), True, True, 0)
         hbox.pack_start(create_button('Mount all', Gtk.STOCK_CONNECT, onclick=self.handler_mount_all), True, True, 0)
         hbox.pack_start(create_button('Unmount all', Gtk.STOCK_DISCONNECT, onclick=self.handler_unmount_all), True, True, 0)
@@ -150,13 +151,13 @@ class SftpManGtk(object):
 
     def _create_list_container(self):
         # This would contain the sftp systems list
-        self.list_container = Gtk.VBox()
+        self.list_container = create_vbox()
         self.refresh_list()
         return self.list_container
 
     def _create_record_container(self):
         # This would contain the form entries when adding/editing systems
-        self.record_container = Gtk.HBox()
+        self.record_container = create_hbox()
         return self.record_container
 
     def __init__(self):
@@ -176,7 +177,7 @@ class SftpManGtk(object):
         if icon_file is not None:
             self.window.set_icon_from_file(icon_file)
 
-        vbox_main = Gtk.VBox()
+        vbox_main = create_vbox()
         vbox_main.pack_start(self._create_tool_box(), True, True, 0)
         vbox_main.pack_start(self._create_list_container(), True, True, 0)
         vbox_main.pack_start(self._create_record_container(), True, True, 0)
@@ -274,7 +275,7 @@ class RecordRenderer(object):
         btn_browse = create_button('..', onclick=filechooser_start)
         btn_browse.set_size_request(20, 25)
 
-        hbox = Gtk.HBox()
+        hbox = create_hbox()
         hbox.pack_start(textbox, True, True, 0)
         hbox.pack_start(btn_browse, False, False, 0)
         hbox.set_size_request(250, 25)
@@ -354,7 +355,7 @@ class RecordRenderer(object):
         for child in self.window_obj.record_container.get_children():
             self.window_obj.record_container.remove(child)
 
-        vbox = Gtk.VBox()
+        vbox = create_vbox()
 
         title = Gtk.Label()
         title_label = 'System editing' if self.added else 'System adding'
@@ -364,7 +365,7 @@ class RecordRenderer(object):
 
         fields = []
         for field_info in self.get_fields():
-            hbox = Gtk.HBox()
+            hbox = create_hbox()
 
             label = Gtk.Label()
             label.set_text(field_info['title'])
@@ -388,7 +389,7 @@ class RecordRenderer(object):
             fields.append(field_info)
 
         # Form actions (Save, Delete, etc..)
-        hbox = Gtk.HBox()
+        hbox = create_hbox()
         hbox.set_size_request(-1, 25)
 
         btn_save = create_button('Save', Gtk.STOCK_SAVE)

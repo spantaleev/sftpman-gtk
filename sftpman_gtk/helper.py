@@ -2,6 +2,10 @@ from gi.repository import Gtk
 import gi
 gi.require_version('Gtk', '3.0')
 
+
+BOX_SPACING = 5
+
+
 def open_file_browser(path):
     """Opens a file browser at the specified path."""
     import subprocess
@@ -36,4 +40,12 @@ def show_warning_message(text):
         Gtk.ButtonsType.CLOSE, text)
     md.run()
     md.destroy()
+
+
+def create_hbox():
+    return Gtk.HBox(spacing=BOX_SPACING)
+
+
+def create_vbox():
+    return Gtk.VBox(spacing=BOX_SPACING)
 
