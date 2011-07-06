@@ -13,7 +13,7 @@ from sftpman.exception import SftpException, SftpMountException
 from sftpman.helper import shell_exec
 
 from helper import open_file_browser, create_button, show_warning_message, \
-     create_hbox, create_vbox
+     create_hbox, create_vbox, create_table
 
 
 class SftpManGtk(object):
@@ -363,56 +363,48 @@ class RecordRenderer(object):
         title_label = 'System editing' if self.added else 'System adding'
         title.set_markup('<big>%s</big>' % title_label)
         vbox.pack_start(title, True, True, 0)
-        vbox.pack_start(Gtk.HSeparator(), True, True, 0)
 
-        fields = []
-        for field_info in self.get_fields():
-            hbox = create_hbox()
+        fields_stored = []
+        fields = self.get_fields()
 
-            label = Gtk.Label()
-            label.set_text(field_info['title'])
-            label.set_alignment(0, 0)
-            label.set_size_request(80, 20)
+        # Fields + actions (save, delete, ..)
+        table = create_table()
 
-            hbox.pack_start(label, True, True, 0)
+        for row_number, field_info in enumerate(fields):
+            label = Gtk.Label(label=field_info['title'])
 
             render_callback = getattr(self, 'render_%s' % field_info['type'], None)
             if render_callback is None:
                 raise SftpException('Missing renderer for field type %s' % field_info['type'])
-
             widget = render_callback(field_info)
 
+            table.attach(label, 0, 1, row_number, row_number + 1)
+            table.attach(widget, 1, 3, row_number, row_number + 1)
+
             field_info['widget'] = widget
+            fields_stored.append(field_info)
 
-            hbox.pack_start(widget, True, True, 0)
-
-            vbox.add(hbox)
-
-            fields.append(field_info)
+        row_number += 1
 
         # Form actions (Save, Delete, etc..)
-        hbox = create_hbox()
-        hbox.set_size_request(-1, 25)
-
         btn_save = create_button('Save', Gtk.STOCK_SAVE)
-        btn_save.connect('clicked', self.handler_save, fields)
-        hbox.pack_start(btn_save, True, True, 0)
+        btn_save.connect('clicked', self.handler_save, fields_stored)
+        table.attach(btn_save, 0, 1, row_number, row_number + 1)
 
         btn_cancel = create_button('Cancel', Gtk.STOCK_CANCEL, onclick=self.handler_cancel)
-        hbox.pack_start(btn_cancel, True, True, 0)
+        table.attach(btn_cancel, 1, 2, row_number, row_number + 1)
 
         if self.added:
             btn_delete = create_button('Delete', Gtk.STOCK_DELETE, onclick=self.handler_delete)
-            hbox.pack_start(btn_delete, True, True, 0)
+            table.attach(btn_delete, 2, 3, row_number, row_number + 1)
 
-        vbox.add(hbox)
-
+        vbox.pack_start(table, False, False, 0)
         self.window_obj.record_container.add(vbox)
         self.window_obj.record_container.show_all()
 
         if not self.added:
             # Give focus to the first field in the form
-            fields[0]['widget'].grab_focus()
+            fields_stored[0]['widget'].grab_focus()
 
 
 def start():
