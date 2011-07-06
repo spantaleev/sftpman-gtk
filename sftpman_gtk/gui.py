@@ -140,11 +140,11 @@ class SftpManGtk(object):
         self.list_container.show_all()
 
     def _create_tool_box(self):
-        hbox = create_hbox()
-        hbox.pack_start(create_button('New', Gtk.STOCK_ADD, onclick=self.handler_create_new), True, True, 0)
-        hbox.pack_start(create_button('Mount all', Gtk.STOCK_CONNECT, onclick=self.handler_mount_all), True, True, 0)
-        hbox.pack_start(create_button('Unmount all', Gtk.STOCK_DISCONNECT, onclick=self.handler_unmount_all), True, True, 0)
-        return hbox
+        self.toolbox = create_hbox()
+        self.toolbox.pack_start(create_button('New', Gtk.STOCK_ADD, onclick=self.handler_create_new), True, True, 0)
+        self.toolbox.pack_start(create_button('Mount all', Gtk.STOCK_CONNECT, onclick=self.handler_mount_all), True, True, 0)
+        self.toolbox.pack_start(create_button('Unmount all', Gtk.STOCK_DISCONNECT, onclick=self.handler_unmount_all), True, True, 0)
+        return self.toolbox
 
     def _create_list_container(self):
         # This would contain the sftp systems list
@@ -220,6 +220,7 @@ class RecordRenderer(object):
         self.added = added
 
         self.window_obj.list_container.hide()
+        self.window_obj.toolbox.set_sensitive(False)
         self.window_obj.in_list_mode = False
 
     def get_fields(self):
@@ -344,6 +345,7 @@ class RecordRenderer(object):
         self.window_obj.refresh_list()
         self.window_obj.list_container.show()
         self.window_obj.in_list_mode = True
+        self.window_obj.toolbox.set_sensitive(True)
 
     def render(self):
         for child in self.window_obj.record_container.get_children():
