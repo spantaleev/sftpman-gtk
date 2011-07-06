@@ -6,6 +6,8 @@ from gi.repository import Gtk, GObject
 import gi
 gi.require_version('Gtk', '3.0')
 
+GObject.threads_init()
+
 from sftpman.model import EnvironmentModel, SystemModel, SystemControllerModel
 from sftpman.exception import SftpException, SftpMountException
 from sftpman.helper import shell_exec
@@ -183,9 +185,6 @@ class SftpManGtk(object):
         self.window.show_all()
 
         self.in_list_mode = True
-
-        # we need to do this if we want to use threads in our GTK app
-        GObject.threads_init()
 
         def list_periodic_refresher():
             while True:
