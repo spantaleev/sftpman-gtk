@@ -372,6 +372,8 @@ class RecordRenderer(object):
 
         for row_number, field_info in enumerate(fields):
             label = Gtk.Label(label=field_info['title'])
+            # Align left (horizontally) and middle (vertically)
+            label.set_alignment(0, 0.5)
 
             render_callback = getattr(self, 'render_%s' % field_info['type'], None)
             if render_callback is None:
