@@ -180,7 +180,7 @@ class SftpManGtk(object):
             self.window.set_icon_from_file(icon_file)
 
         vbox_main = create_vbox()
-        vbox_main.pack_start(self._create_tool_box(), True, True, 0)
+        vbox_main.pack_start(self._create_tool_box(), False, False, 0)
         vbox_main.pack_start(self._create_list_container(), True, True, 0)
         vbox_main.pack_start(self._create_record_container(), True, True, 0)
 
