@@ -223,13 +223,17 @@ class RecordRenderer(object):
         self.window_obj.toolbox.set_sensitive(False)
         self.window_obj.in_list_mode = False
 
+        self.hbox_key_file = None
+        self.combobox_auth_method = None
+
     def get_fields(self):
         return (
-            {'id': 'id', 'type': 'textbox', 'title': 'Machine Id/Name', 'disabled': self.added},
+            {'id': 'id', 'type': 'textbox', 'title': 'Machine Id', 'disabled': self.added},
             {'id': 'host', 'type': 'textbox', 'title': 'Host', 'disabled': False},
             {'id': 'port', 'type': 'textbox', 'title': 'Port', 'disabled': False},
             {'id': 'user', 'type': 'textbox', 'title': 'Username', 'disabled': False},
-            {'id': 'ssh_key', 'type': 'filepath', 'title': 'SSH key', 'disabled': False},
+            {'id': 'auth_method', 'type': 'combobox_auth_method', 'title': 'Authentication method', 'disabled': False},
+            {'id': 'ssh_key', 'type': 'key_filepath', 'title': 'SSH key', 'disabled': False},
             {'id': 'mount_point', 'type': 'textbox', 'title': 'Remote mount point', 'disabled': False},
             {'id': 'mount_opts', 'type': 'options', 'title': 'Options', 'disabled': False},
             {'id': 'cmd_before_mount', 'type': 'textbox', 'title': 'Run before mount', 'disabled': False},
@@ -238,6 +242,38 @@ class RecordRenderer(object):
     def get_field_value(self, field_name):
         value = getattr(self.system, field_name, None)
         return value if value is not None else ''
+
+    auth_methods = (
+        (SystemModel.AUTH_METHOD_PUBLIC_KEY, 'Public key'),
+        (SystemModel.AUTH_METHOD_PASSWORD, 'Password'),
+    )
+
+    def render_combobox_auth_method(self, field_info):
+        self.combobox_auth_method = Gtk.ComboBoxText()
+        selected_index = 0
+        selected_auth_method = self.system.auth_method
+        for index, (key, title) in enumerate(self.auth_methods):
+            if key == selected_auth_method:
+                selected_index = index
+            self.combobox_auth_method.insert_text(index, title)
+        self.combobox_auth_method.set_active(selected_index)
+        self.combobox_auth_method.connect('changed', self.on_auth_method_changed)
+        return self.combobox_auth_method
+
+    def on_auth_method_changed(self, combo):
+        auth_method = self.get_value_combobox_auth_method(combo)
+        if auth_method == SystemModel.AUTH_METHOD_PUBLIC_KEY:
+            self.hbox_key_file.set_sensitive(True)
+        else:
+            self.hbox_key_file.set_sensitive(False)
+
+    def get_value_combobox_auth_method(self, widget):
+        selected_index = widget.get_active()
+        try:
+            auth_method, _ = self.auth_methods[selected_index]
+            return auth_method
+        except IndexError:
+            return None
 
     def render_textbox(self, field_info):
         textbox = Gtk.Entry()
@@ -249,7 +285,7 @@ class RecordRenderer(object):
     def get_value_textbox(self, widget):
         return widget.get_text()
 
-    def render_filepath(self, field_info):
+    def render_key_filepath(self, field_info):
         path_now = self.get_field_value(field_info['id'])
 
         textbox = Gtk.Entry()
@@ -271,14 +307,19 @@ class RecordRenderer(object):
 
             filechooser.destroy()
 
-        btn_browse = create_button('..', onclick=filechooser_start)
+        btn_browse = create_button('', Gtk.STOCK_OPEN, onclick=filechooser_start)
 
-        hbox = create_hbox()
-        hbox.pack_start(textbox, True, True, 0)
-        hbox.pack_start(btn_browse, False, False, 0)
-        return hbox
+        self.hbox_key_file = create_hbox()
+        self.hbox_key_file.pack_start(textbox, True, True, 0)
+        self.hbox_key_file.pack_start(btn_browse, False, False, 0)
 
-    def get_value_filepath(self, widget):
+        # Allow the changed handler for the auth method combobox to
+        # enable/disable this SSH key chooser, depending on the auth method
+        self.on_auth_method_changed(self.combobox_auth_method)
+
+        return self.hbox_key_file
+
+    def get_value_key_filepath(self, widget):
         textbox = widget.get_children()[0]
         return textbox.get_text()
 
