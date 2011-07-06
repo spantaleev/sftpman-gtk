@@ -89,9 +89,7 @@ class SftpManGtk(object):
         for childHbox in self.list_container.get_children():
             self.list_container.remove(childHbox)
 
-        separator = create_hbox()
-        separator.set_size_request(10, 25)
-        self.list_container.pack_start(separator, False, False, 0)
+        self.list_container.pack_start(create_hbox(), False, False, 0)
 
         ids_available = self.environment.get_available_ids()
         for system_id in ids_available:
@@ -135,8 +133,7 @@ class SftpManGtk(object):
             self.list_container.pack_start(hbox, False, False, 0)
 
         if len(ids_available) == 0:
-            label = Gtk.Label()
-            label.set_text('No sftp systems added yet.')
+            label = Gtk.Label(label='No sftp systems defined yet.')
             label.set_justify(Gtk.Justification.CENTER)
             self.list_container.pack_start(label, True, True, 0)
 
@@ -244,7 +241,6 @@ class RecordRenderer(object):
     def render_textbox(self, field_info):
         textbox = Gtk.Entry()
         textbox.set_text(str(self.get_field_value(field_info['id'])))
-        textbox.set_size_request(250, 25)
         if field_info.get('disabled', False):
             textbox.set_sensitive(False)
         return textbox
@@ -275,13 +271,10 @@ class RecordRenderer(object):
             filechooser.destroy()
 
         btn_browse = create_button('..', onclick=filechooser_start)
-        btn_browse.set_size_request(20, 25)
 
         hbox = create_hbox()
         hbox.pack_start(textbox, True, True, 0)
         hbox.pack_start(btn_browse, False, False, 0)
-        hbox.set_size_request(250, 25)
-
         return hbox
 
     def get_value_filepath(self, widget):
@@ -292,7 +285,6 @@ class RecordRenderer(object):
         options = self.get_field_value(field_info['id'])
         textbox = Gtk.Entry()
         textbox.set_text(', '.join(options))
-        textbox.set_size_request(250, 25)
         return textbox
 
     def get_value_options(self, widget):
