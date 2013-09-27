@@ -6,4 +6,4 @@ Icon=sftpman-gtk
 Terminal=false
 Type=Application
 StartupNotify=true
-Categories=GTK;Filesystem;System;
+Categories=GTK;Filesystem;Network;
