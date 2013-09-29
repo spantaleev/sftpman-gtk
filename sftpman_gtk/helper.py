@@ -49,6 +49,7 @@ def create_hbox():
 def create_vbox():
     return Gtk.VBox(spacing=BOX_SPACING)
 
+
 def create_table():
     table = Gtk.Table(homogeneous=True)
     table.set_row_spacings(BOX_SPACING)

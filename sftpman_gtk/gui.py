@@ -139,6 +139,14 @@ class SftpManGtk(object):
 
         self.list_container.show_all()
 
+    def show_list(self):
+        self.list_container_wrapper.show()
+        self.in_list_mode = True
+
+    def hide_list(self):
+        self.list_container_wrapper.hide()
+        self.in_list_mode = False
+
     def _create_tool_box(self):
         self.toolbox = create_hbox()
         self.toolbox.pack_start(create_button('New', Gtk.STOCK_ADD, onclick=self.handler_create_new), True, True, 0)
@@ -162,7 +170,7 @@ class SftpManGtk(object):
 
         self.window = Gtk.Window()
         self.window.set_title('SftpMan')
-        self.window.resize(550, 350)
+        self.window.resize(550, 750)
         # Add some padding, because of the GTK3 window size grip
         self.window.set_border_width(12)
         self.window.set_position(Gtk.WindowPosition.CENTER)
@@ -176,10 +184,13 @@ class SftpManGtk(object):
         if icon_file is not None:
             self.window.set_icon_from_file(icon_file)
 
+        self.list_container_wrapper = Gtk.ScrolledWindow()
+        self.list_container_wrapper.add_with_viewport(self._create_list_container())
+
         vbox_main = create_vbox()
         vbox_main.pack_start(self._create_tool_box(), False, False, 0)
-        vbox_main.pack_start(self._create_list_container(), True, True, 0)
-        vbox_main.pack_start(self._create_record_container(), True, True, 0)
+        vbox_main.pack_start(self.list_container_wrapper, True, True, 0)
+        vbox_main.pack_start(self._create_record_container(), False, False, 0)
 
         self.window.add(vbox_main)
         self.window.show_all()
@@ -219,9 +230,8 @@ class RecordRenderer(object):
         self.system = system
         self.added = added
 
-        self.window_obj.list_container.hide()
+        self.window_obj.hide_list()
         self.window_obj.toolbox.set_sensitive(False)
-        self.window_obj.in_list_mode = False
 
         self.hbox_key_file = None
         self.combobox_auth_method = None
@@ -385,8 +395,7 @@ class RecordRenderer(object):
         for child in self.window_obj.record_container.get_children():
             self.window_obj.record_container.remove(child)
         self.window_obj.refresh_list()
-        self.window_obj.list_container.show()
-        self.window_obj.in_list_mode = True
+        self.window_obj.show_list()
         self.window_obj.toolbox.set_sensitive(True)
 
     def render(self):
