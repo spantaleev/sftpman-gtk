@@ -9,16 +9,18 @@ It allows you to define all your SFTP systems and easily mount/unmount them.
 
 from setuptools import setup
 
+import sftpman_gtk
+
 setup(
     name = "sftpman-gtk",
-    version = '0.3.0',
+    version = sftpman_gtk.__version__,
     description = "A GTK frontend for SftpMan, which helps you mount SFTP file systems.",
     long_description = __doc__,
-    author = "Slavi Pantaleev",
-    author_email = "s.pantaleev@gmail.com",
-    url = "https://github.com/spantaleev/sftpman-gtk",
+    author = sftpman_gtk.__author__,
+    author_email = sftpman_gtk.__author_email__,
+    url = sftpman_gtk.__website_url__,
     keywords = ["sftp", "ssh", "sshfs", "gtk"],
-    license = "BSD",
+    license = sftpman_gtk.__license__,
     packages = ['sftpman_gtk'],
     install_requires = ['sftpman>=0.5.0'],
     entry_points="""
