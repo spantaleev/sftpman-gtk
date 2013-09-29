@@ -2,7 +2,7 @@ import datetime
 from gi.repository import Gtk
 
 __title__ = 'sijax'
-__version__ = '0.3.0'
+__version__ = '0.4.0'
 __author__ = 'Slavi Pantaleev'
 __author_email__ = 's.pantaleev@gmail.com'
 __website_url__ = 'https://github.com/spantaleev/sftpman-gtk'
