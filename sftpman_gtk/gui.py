@@ -2,11 +2,13 @@ import os
 from threading import Thread
 from time import sleep
 
-from gi.repository import Gtk, GObject
+from gi.repository import Gtk, GObject, GdkPixbuf
 import gi
 gi.require_version('Gtk', '3.0')
 
 GObject.threads_init()
+
+import sftpman_gtk
 
 from sftpman.model import EnvironmentModel, SystemModel, SystemControllerModel
 from sftpman.exception import SftpException, SftpMountException
@@ -70,6 +72,21 @@ class SftpManGtk(object):
             controller = self._get_system_controller_by_id(system_id)
             controller.unmount()
         self.refresh_list()
+
+    def handler_about(self, btn):
+        dialog = Gtk.AboutDialog()
+        dialog.set_program_name('SftpMan')
+        dialog.set_version(sftpman_gtk.__version__)
+        dialog.set_license_type(sftpman_gtk.__gtk_license_type__)
+        dialog.set_comments('Mount sftp/sshfs file systems with ease')
+        dialog.set_website(sftpman_gtk.__website_url__)
+        dialog.set_website_label(sftpman_gtk.__website_url__)
+        dialog.set_copyright(sftpman_gtk.__copyright__)
+        if self.icon_file is not None:
+            dialog.set_logo(GdkPixbuf.Pixbuf.new_from_file(self.icon_file))
+        dialog.set_transient_for(self.window)
+        dialog.run()
+        dialog.destroy()
 
     def handler_create_new(self, btn):
         system = SystemModel()
@@ -152,6 +169,7 @@ class SftpManGtk(object):
         self.toolbox.pack_start(create_button('New', Gtk.STOCK_ADD, onclick=self.handler_create_new), True, True, 0)
         self.toolbox.pack_start(create_button('Mount all', Gtk.STOCK_CONNECT, onclick=self.handler_mount_all), True, True, 0)
         self.toolbox.pack_start(create_button('Unmount all', Gtk.STOCK_DISCONNECT, onclick=self.handler_unmount_all), True, True, 0)
+        self.toolbox.pack_start(create_button('About', Gtk.STOCK_ABOUT, onclick=self.handler_about), True, True, 0)
         return self.toolbox
 
     def _create_list_container(self):
@@ -176,13 +194,13 @@ class SftpManGtk(object):
         self.window.set_position(Gtk.WindowPosition.CENTER)
         self.window.connect('destroy', self.handler_destroy)
 
-        icon_file = os.path.join(os.path.dirname(__file__), '..', 'sftpman-gtk.png')
-        if not os.path.exists(icon_file):
-            icon_file = '/usr/share/pixmaps/sftpman-gtk.png'
-            if not os.path.exists(icon_file):
-                icon_file = None
-        if icon_file is not None:
-            self.window.set_icon_from_file(icon_file)
+        self.icon_file = os.path.join(os.path.dirname(__file__), '..', 'sftpman-gtk.png')
+        if not os.path.exists(self.icon_file):
+            self.icon_file = '/usr/share/pixmaps/sftpman-gtk.png'
+            if not os.path.exists(self.icon_file):
+                self.icon_file = None
+        if self.icon_file is not None:
+            self.window.set_icon_from_file(self.icon_file)
 
         self.list_container_wrapper = Gtk.ScrolledWindow()
         self.list_container_wrapper.add_with_viewport(self._create_list_container())
