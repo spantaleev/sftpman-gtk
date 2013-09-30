@@ -77,7 +77,7 @@ class SftpManGtk(object):
         dialog = Gtk.AboutDialog()
         dialog.set_program_name('SftpMan')
         dialog.set_version(sftpman_gtk.__version__)
-        dialog.set_license_type(sftpman_gtk.__gtk_license_type__)
+        dialog.set_license_type(Gtk.License.BSD)
         dialog.set_comments('Mount sftp/sshfs file systems with ease')
         dialog.set_website(sftpman_gtk.__website_url__)
         dialog.set_website_label(sftpman_gtk.__website_url__)
