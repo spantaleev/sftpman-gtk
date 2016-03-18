@@ -2,9 +2,9 @@ import os
 from threading import Thread
 from time import sleep
 
-from gi.repository import Gtk, GObject, GdkPixbuf
 import gi
 gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk, GObject, GdkPixbuf
 
 GObject.threads_init()
 
