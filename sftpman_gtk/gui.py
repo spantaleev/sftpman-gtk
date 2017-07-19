@@ -93,7 +93,7 @@ class SftpManGtk(object):
         system.id = ''
         system.user = shell_exec('whoami').strip()
         system.mount_point = '/home/%s/' % system.user
-        system.mount_opts = ['follow_symlinks', 'workaround=rename', 'big_writes']
+        system.mount_opts = ['follow_symlinks', 'workaround=rename']
         RecordRenderer(self, system, added=False).render()
 
     def handler_edit(self, btn, system_id):
