@@ -14,7 +14,7 @@ from sftpman.model import EnvironmentModel, SystemModel, SystemControllerModel
 from sftpman.exception import SftpException, SftpMountException
 from sftpman.helper import shell_exec
 
-from .helper import open_file_browser, create_button, show_warning_message, \
+from .helper import open_file_browser, show_warning_message, \
      create_hbox, create_vbox, create_table
 
 
@@ -51,7 +51,7 @@ class SftpManGtk(object):
                 cmd = e.mount_cmd,
                 output = e.mount_cmd_output,
             )
-            show_warning_message(msg)
+            show_warning_message(self.window, msg)
 
     def handler_mount_by_id(self, btn, system_id):
         self._handle_mount(system_id)
@@ -103,10 +103,8 @@ class SftpManGtk(object):
     def refresh_list(self):
         ids_mounted = self.environment.get_mounted_ids()
 
-        for childHbox in self.list_container.get_children():
-            self.list_container.remove(childHbox)
-
-        self.list_container.pack_start(create_hbox(), False, False, 0)
+        for child in self.list_container.get_children():
+            self.list_container.remove(child)
 
         ids_available = self.environment.get_available_ids()
         for system_id in ids_available:
@@ -114,9 +112,9 @@ class SftpManGtk(object):
 
             hbox = create_hbox()
 
-            icon = Gtk.Image()
-            icon.set_from_stock(Gtk.STOCK_YES if is_mounted else Gtk.STOCK_NO, Gtk.IconSize.SMALL_TOOLBAR)
-            hbox.pack_start(icon, True, True, 0)
+            icon_name = 'network-server' if is_mounted else 'network-offline'
+            icon = Gtk.Image.new_from_icon_name(icon_name, Gtk.IconSize.SMALL_TOOLBAR)
+            hbox.pack_start(icon, False, True, 10)
 
             # Sftp system id
             label = Gtk.Label(label=system_id)
@@ -126,28 +124,48 @@ class SftpManGtk(object):
 
             # Open/Mount button
             if (is_mounted):
-                btn_mount_or_open = create_button('Open', Gtk.STOCK_OPEN)
-                btn_mount_or_open.connect('clicked', self.handler_open_by_id, system_id)
+                btn_mount_or_open = Gtk.Button()
+                btn_mount_or_open.set_label('Open')
+                btn_mount_or_open.set_image(Gtk.Image.new_from_icon_name('document-open', Gtk.IconSize.BUTTON))
+                btn_mount_or_open.set_always_show_image(True)
+                btn_mount_or_open.set_tooltip_text('Opens this filesystem')
+                btn_mount_or_open.connect("clicked", self.handler_open_by_id, system_id)
             else:
-                btn_mount_or_open = create_button('Mount', Gtk.STOCK_CONNECT)
-                btn_mount_or_open.connect('clicked', self.handler_mount_by_id, system_id)
+                btn_mount_or_open = Gtk.Button()
+                btn_mount_or_open.set_label('Mount')
+                btn_mount_or_open.set_image(Gtk.Image.new_from_icon_name('network-idle', Gtk.IconSize.BUTTON))
+                btn_mount_or_open.set_always_show_image(True)
+                btn_mount_or_open.set_tooltip_text('Mounts this filesystem')
+                btn_mount_or_open.connect("clicked", self.handler_mount_by_id, system_id)
+            btn_mount_or_open.set_size_request(120, 35)
 
             # Unmount button
-            btn_unmount = create_button('Unmount', Gtk.STOCK_DISCONNECT)
-            if (not is_mounted):
+            btn_unmount = Gtk.Button()
+            btn_unmount.set_label('Unmount')
+            btn_unmount.set_image(Gtk.Image.new_from_icon_name('network-offline', Gtk.IconSize.BUTTON))
+            btn_unmount.set_always_show_image(True)
+            btn_unmount.set_tooltip_text('Unmounts this filesystem')
+            if not is_mounted:
                 btn_unmount.set_sensitive(False)
             else:
-                btn_unmount.connect('clicked', self.handler_unmount_by_id, system_id)
+                btn_unmount.connect("clicked", self.handler_unmount_by_id, system_id)
+            btn_unmount.set_size_request(120, 35)
 
             # Edit button
-            btn_edit = create_button('Edit', Gtk.STOCK_EDIT)
-            btn_edit.connect('clicked', self.handler_edit, system_id)
+            btn_edit = Gtk.Button()
+            btn_edit.set_image(Gtk.Image.new_from_icon_name('preferences-system', Gtk.IconSize.BUTTON))
+            btn_edit.set_always_show_image(False)
+            btn_edit.set_tooltip_text("Edit this filesystem's settings")
+            btn_edit.connect("clicked", self.handler_edit, system_id)
+            btn_edit.set_margin_end(10)
 
-            hbox.pack_start(btn_mount_or_open, True, True, 0)
-            hbox.pack_start(btn_unmount, True, True, 0)
-            hbox.pack_start(btn_edit, True, True, 0)
+            hbox.pack_start(btn_mount_or_open, False, True, 0)
+            hbox.pack_start(btn_unmount, False, True, 0)
+            hbox.pack_start(btn_edit, False, True, 0)
 
-            self.list_container.pack_start(hbox, False, False, 0)
+            row = Gtk.ListBoxRow()
+            row.add(hbox)
+            self.list_container.add(row)
 
         if len(ids_available) == 0:
             label = Gtk.Label(label='No sftp systems defined yet.')
@@ -164,17 +182,45 @@ class SftpManGtk(object):
         self.list_container_wrapper.hide()
         self.in_list_mode = False
 
-    def _create_tool_box(self):
-        self.toolbox = create_hbox()
-        self.toolbox.pack_start(create_button('New', Gtk.STOCK_ADD, onclick=self.handler_create_new), True, True, 0)
-        self.toolbox.pack_start(create_button('Mount all', Gtk.STOCK_CONNECT, onclick=self.handler_mount_all), True, True, 0)
-        self.toolbox.pack_start(create_button('Unmount all', Gtk.STOCK_DISCONNECT, onclick=self.handler_unmount_all), True, True, 0)
-        self.toolbox.pack_start(create_button('About', Gtk.STOCK_ABOUT, onclick=self.handler_about), True, True, 0)
-        return self.toolbox
+    def _create_header_bar(self):
+        self.header_bar = Gtk.HeaderBar()
+        self.header_bar.set_show_close_button(True)
+
+        btn_add_new = Gtk.Button()
+        btn_add_new.set_label('New')
+        btn_add_new.set_image(Gtk.Image.new_from_icon_name('document-new', Gtk.IconSize.LARGE_TOOLBAR))
+        btn_add_new.set_always_show_image(True)
+        btn_add_new.set_tooltip_text('Add a new filesystem')
+        btn_add_new.connect("clicked", self.handler_create_new)
+        self.header_bar.pack_start(btn_add_new)
+
+        btn_about = Gtk.Button()
+        btn_about.set_image(Gtk.Image.new_from_icon_name('help-about', Gtk.IconSize.LARGE_TOOLBAR))
+        btn_about.connect("clicked", self.handler_about)
+        self.header_bar.pack_end(btn_about)
+
+        btn_unmount_all = Gtk.Button()
+        btn_unmount_all.set_label('Unmount all')
+        btn_unmount_all.set_image(Gtk.Image.new_from_icon_name('network-offline', Gtk.IconSize.LARGE_TOOLBAR))
+        btn_unmount_all.set_always_show_image(True)
+        btn_unmount_all.set_tooltip_text('Unmounts all filesystems')
+        btn_unmount_all.connect("clicked", self.handler_unmount_all)
+        self.header_bar.pack_end(btn_unmount_all)
+
+        btn_mount_all = Gtk.Button()
+        btn_mount_all.set_label('Mount all')
+        btn_mount_all.set_image(Gtk.Image.new_from_icon_name('network-idle', Gtk.IconSize.LARGE_TOOLBAR))
+        btn_mount_all.set_always_show_image(True)
+        btn_mount_all.set_tooltip_text('Mounts all filesystems')
+        btn_mount_all.connect("clicked", self.handler_mount_all)
+        self.header_bar.pack_end(btn_mount_all)
+
+        return self.header_bar
 
     def _create_list_container(self):
         # This would contain the sftp systems list
-        self.list_container = create_vbox()
+        self.list_container = Gtk.ListBox()
+        self.list_container.set_selection_mode(Gtk.SelectionMode.NONE)
         self.refresh_list()
         return self.list_container
 
@@ -188,9 +234,7 @@ class SftpManGtk(object):
 
         self.window = Gtk.Window()
         self.window.set_title('SftpMan')
-        self.window.resize(550, 750)
-        # Add some padding, because of the GTK3 window size grip
-        self.window.set_border_width(12)
+        self.window.resize(550, 600)
         self.window.set_position(Gtk.WindowPosition.CENTER)
         self.window.connect('destroy', self.handler_destroy)
 
@@ -202,13 +246,16 @@ class SftpManGtk(object):
         if self.icon_file is not None:
             self.window.set_icon_from_file(self.icon_file)
 
+        self.window.set_titlebar(self._create_header_bar())
+
         self.list_container_wrapper = Gtk.ScrolledWindow()
         self.list_container_wrapper.add_with_viewport(self._create_list_container())
 
         vbox_main = create_vbox()
-        vbox_main.pack_start(self._create_tool_box(), False, False, 0)
         vbox_main.pack_start(self.list_container_wrapper, True, True, 0)
         vbox_main.pack_start(self._create_record_container(), False, False, 0)
+
+        self.vbox_main = vbox_main
 
         self.window.add(vbox_main)
         self.window.show_all()
@@ -231,8 +278,8 @@ class SftpManGtk(object):
         checks_pass, failures = self.environment.perform_preflight_check()
         if not checks_pass:
             for msg in failures:
-                show_warning_message(msg)
-            show_warning_message('Mounting will fail until all problems are fixed.')
+                show_warning_message(self.window, msg)
+            show_warning_message(self.window, 'Mounting will fail until all problems are fixed.')
 
     def main(self):
         self._perform_preflight_check()
@@ -249,12 +296,46 @@ class RecordRenderer(object):
         self.added = added
 
         self.window_obj.hide_list()
-        self.window_obj.toolbox.set_sensitive(False)
+        for child in self.window_obj.header_bar.get_children():
+            child.set_sensitive(False)
+
+        self.rendered_fields = []
+
+        self.action_bar = Gtk.ActionBar()
+
+        btn_save = Gtk.Button()
+        btn_save.set_label('Save')
+        btn_save.set_image(Gtk.Image.new_from_icon_name('document-save', Gtk.IconSize.BUTTON))
+        btn_save.set_always_show_image(True)
+        btn_save.show()
+        btn_save.connect("clicked", self.handler_save)
+
+        btn_back = Gtk.Button()
+        btn_back.set_label('Cancel')
+        btn_back.set_image(Gtk.Image.new_from_icon_name('object-rotate-left', Gtk.IconSize.BUTTON))
+        btn_back.set_always_show_image(True)
+        btn_back.show()
+        btn_back.connect("clicked", self.handler_cancel)
+
+        btn_delete = Gtk.Button()
+        btn_delete.set_label('Delete')
+        btn_delete.set_image(Gtk.Image.new_from_icon_name('edit-delete', Gtk.IconSize.BUTTON))
+        btn_delete.set_always_show_image(True)
+        btn_delete.show()
+        btn_delete.connect("clicked", self.handler_delete)
+
+        self.action_bar.pack_start(btn_save)
+        self.action_bar.set_center_widget(btn_back)
+        if self.added:
+            self.action_bar.pack_end(btn_delete)
+
+        self.window_obj.vbox_main.pack_end(self.action_bar, False, False, 0)
+        self.action_bar.show()
 
         self.hbox_key_file = None
         self.combobox_auth_method = None
 
-    def get_fields(self):
+    def get_field_definitions(self):
         return (
             {'id': 'id', 'type': 'textbox', 'title': 'Machine Id', 'disabled': self.added},
             {'id': 'host', 'type': 'textbox', 'title': 'Host', 'disabled': False},
@@ -320,8 +401,8 @@ class RecordRenderer(object):
         textbox.set_text(path_now)
 
         def filechooser_start(btn):
-            buttons = (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK)
-            filechooser = Gtk.FileChooserDialog('Select your private ssh key file:', None, Gtk.FileChooserAction.OPEN, buttons)
+            buttons = ('Cancel', Gtk.ResponseType.CANCEL, 'Open', Gtk.ResponseType.OK)
+            filechooser = Gtk.FileChooserDialog('Select your private ssh key file:', self.window_obj.window, Gtk.FileChooserAction.OPEN, buttons)
             if os.path.exists(path_now):
                 start_path = os.path.dirname(path_now)
             else:
@@ -335,7 +416,10 @@ class RecordRenderer(object):
 
             filechooser.destroy()
 
-        btn_browse = create_button('', Gtk.STOCK_OPEN, onclick=filechooser_start)
+        btn_browse = Gtk.Button()
+        btn_browse.set_image(Gtk.Image.new_from_icon_name('document-open', Gtk.IconSize.BUTTON))
+        btn_browse.show()
+        btn_browse.connect("clicked", filechooser_start)
 
         self.hbox_key_file = create_hbox()
         self.hbox_key_file.pack_start(textbox, True, True, 0)
@@ -360,7 +444,7 @@ class RecordRenderer(object):
     def get_value_options(self, widget):
         return [option.strip() for option in widget.get_text().split(',')]
 
-    def handler_save(self, btn, fields):
+    def handler_save(self, btn):
         if not self.added:
             controller = None
             is_mounted_before_save = False
@@ -369,7 +453,7 @@ class RecordRenderer(object):
             is_mounted_before_save = controller.mounted
             controller.unmount()
 
-        for field_info in fields:
+        for field_info in self.rendered_fields:
             widget = field_info['widget']
 
             get_value_callback = getattr(self, 'get_value_%s' % field_info['type'], None)
@@ -388,7 +472,7 @@ class RecordRenderer(object):
             self.close()
         else:
             for field_id, msg in errors:
-                show_warning_message(msg)
+                show_warning_message(self.window_obj.window, msg)
 
     def handler_delete(self, btn):
         text = 'Delete definition for `%s`?' % self.system.id
@@ -414,26 +498,20 @@ class RecordRenderer(object):
             self.window_obj.record_container.remove(child)
         self.window_obj.refresh_list()
         self.window_obj.show_list()
-        self.window_obj.toolbox.set_sensitive(True)
+
+        for child in self.window_obj.header_bar.get_children():
+            child.set_sensitive(True)
+        self.window_obj.vbox_main.remove(self.action_bar)
 
     def render(self):
         for child in self.window_obj.record_container.get_children():
             self.window_obj.record_container.remove(child)
 
-        vbox = create_vbox()
+        self.rendered_fields = []
 
-        title = Gtk.Label()
-        title_label = 'System editing' if self.added else 'System adding'
-        title.set_markup('<big>%s</big>' % title_label)
-        vbox.pack_start(title, False, False, 0)
-
-        fields_stored = []
-        fields = self.get_fields()
-
-        # Fields + actions (save, delete, ..)
         table = create_table()
 
-        for row_number, field_info in enumerate(fields):
+        for row_number, field_info in enumerate(self.get_field_definitions()):
             label = Gtk.Label(label=field_info['title'])
             # Align left (horizontally) and middle (vertically)
             label.set_alignment(0, 0.5)
@@ -447,29 +525,14 @@ class RecordRenderer(object):
             table.attach(widget, 1, 3, row_number, row_number + 1)
 
             field_info['widget'] = widget
-            fields_stored.append(field_info)
+            self.rendered_fields.append(field_info)
 
-        row_number += 1
-
-        # Form actions (Save, Delete, etc..)
-        btn_save = create_button('Save', Gtk.STOCK_SAVE)
-        btn_save.connect('clicked', self.handler_save, fields_stored)
-        table.attach(btn_save, 0, 1, row_number, row_number + 1)
-
-        btn_cancel = create_button('Cancel', Gtk.STOCK_CANCEL, onclick=self.handler_cancel)
-        table.attach(btn_cancel, 1, 2, row_number, row_number + 1)
-
-        if self.added:
-            btn_delete = create_button('Delete', Gtk.STOCK_DELETE, onclick=self.handler_delete)
-            table.attach(btn_delete, 2, 3, row_number, row_number + 1)
-
-        vbox.pack_start(table, False, False, 0)
-        self.window_obj.record_container.add(vbox)
+        self.window_obj.record_container.add(table)
         self.window_obj.record_container.show_all()
 
         if not self.added:
             # Give focus to the first field in the form
-            fields_stored[0]['widget'].grab_focus()
+            self.rendered_fields[0]['widget'].grab_focus()
 
 
 def start():
