@@ -35,7 +35,7 @@ setup(
         "Environment :: X11 Applications :: GTK",
         "Intended Audience :: Developers",
         "Intended Audience :: System Administrators",
-        "License :: OSI Approved :: BSD License",
+        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Operating System :: Unix",
         "Topic :: Communications :: File Sharing",
         "Topic :: Desktop Environment :: File Managers",
