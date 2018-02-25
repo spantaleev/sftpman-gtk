@@ -170,7 +170,7 @@ class SftpManGtk(object):
         if len(ids_available) == 0:
             label = Gtk.Label(label='No sftp systems defined yet.')
             label.set_justify(Gtk.Justification.CENTER)
-            self.list_container.pack_start(label, True, True, 0)
+            self.list_container.add(label)
 
         self.list_container.show_all()
 
