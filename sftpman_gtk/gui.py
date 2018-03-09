@@ -4,9 +4,7 @@ from time import sleep
 
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, GObject, GdkPixbuf
-
-GObject.threads_init()
+from gi.repository import Gtk, GLib, GObject, GdkPixbuf
 
 import sftpman_gtk
 
@@ -267,7 +265,7 @@ class SftpManGtk(object):
                 # Trying to update the GTK GUI from a thread causes
                 # a segmentation fault - this is the proper way to do it
                 if self.in_list_mode:
-                    GObject.idle_add(self.refresh_list)
+                    GLib.idle_add(self.refresh_list)
                 sleep(15)
 
         refresher_thread = Thread(target=list_periodic_refresher)
