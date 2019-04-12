@@ -440,7 +440,10 @@ class RecordRenderer(object):
         return textbox
 
     def get_value_options(self, widget):
-        return [option.strip() for option in widget.get_text().split(',')]
+        widget_text = widget.get_text().strip()
+        if widget_text == '':
+            return []
+        return [option.strip() for option in widget_text.split(',')]
 
     def handler_save(self, btn):
         if not self.added:
