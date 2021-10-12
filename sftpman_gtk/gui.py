@@ -352,6 +352,7 @@ class RecordRenderer(object):
 
     auth_methods = (
         (SystemModel.AUTH_METHOD_PUBLIC_KEY, 'Public key'),
+        (SystemModel.AUTH_METHOD_AUTHENTICATION_AGENT, 'SSH agent'),
         (SystemModel.AUTH_METHOD_PASSWORD, 'Password'),
     )
 
