@@ -580,6 +580,7 @@ class RecordRenderer(object):
             label = Gtk.Label(label=field_info['title'])
             # Align left (horizontally) and middle (vertically)
             label.set_alignment(0, 0.5)
+            label.set_margin_start(10)
 
             render_callback = getattr(self, 'render_%s' % field_info['type'], None)
             if render_callback is None:
