@@ -4,7 +4,7 @@ from time import sleep
 
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, GLib, GObject, GdkPixbuf
+from gi.repository import Gtk, GLib, GObject, Gdk, GdkPixbuf
 
 import sftpman_gtk
 
@@ -71,6 +71,15 @@ class SftpManGtk(object):
             controller.unmount()
         self.refresh_list()
 
+    def handler_toggle_search(self, btn):
+        if self.search_bar.get_search_mode():
+            # Search mode will be disabled. Clear the filter.
+            self.list_filter_text = None
+
+        self.search_bar.set_search_mode(self.btn_mount_search.get_active())
+
+        self.refresh_list()
+
     def handler_about(self, btn):
         dialog = Gtk.AboutDialog()
         dialog.set_program_name('SftpMan')
@@ -105,6 +114,13 @@ class SftpManGtk(object):
             self.list_container.remove(child)
 
         ids_available = self.environment.get_available_ids()
+
+        empty_list_message = 'No sftp systems defined yet.'
+
+        if self.list_filter_text not in [None, '']:
+            empty_list_message = 'No sftp systems match your search criteria.'
+            ids_available = [id for id in ids_available if id.startswith(self.list_filter_text)]
+
         for system_id in ids_available:
             is_mounted = system_id in ids_mounted
 
@@ -166,7 +182,7 @@ class SftpManGtk(object):
             self.list_container.add(row)
 
         if len(ids_available) == 0:
-            label = Gtk.Label(label='No sftp systems defined yet.')
+            label = Gtk.Label(label=empty_list_message)
             label.set_justify(Gtk.Justification.CENTER)
             self.list_container.add(label)
 
@@ -196,6 +212,15 @@ class SftpManGtk(object):
         btn_about.set_image(Gtk.Image.new_from_icon_name('help-about', Gtk.IconSize.LARGE_TOOLBAR))
         btn_about.connect("clicked", self.handler_about)
         self.header_bar.pack_end(btn_about)
+
+        self.btn_mount_search = Gtk.ToggleButton()
+        self.btn_mount_search.set_label('Search')
+        self.btn_mount_search.set_image(Gtk.Image.new_from_icon_name('search', Gtk.IconSize.LARGE_TOOLBAR))
+        self.btn_mount_search.set_always_show_image(True)
+        self.btn_mount_search.set_tooltip_text('Searches the list [Ctrl + F or Ctrl + K]')
+        self.btn_mount_search.connect("toggled", self.handler_toggle_search)
+        self.btn_mount_search.set_active(self.search_bar.get_search_mode())
+        self.header_bar.pack_end(self.btn_mount_search)
 
         btn_unmount_all = Gtk.Button()
         btn_unmount_all.set_label('Unmount all')
@@ -227,8 +252,50 @@ class SftpManGtk(object):
         self.record_container = create_hbox()
         return self.record_container
 
+    def _create_search_bar(self):
+        def search_changed_handler(search_entry):
+            self.list_filter_text = search_entry.get_text()
+            self.refresh_list()
+
+        search_entry = Gtk.SearchEntry()
+        search_entry.set_placeholder_text('Search..')
+        search_entry.set_size_request(400, -1)
+        search_entry.connect("search-changed", search_changed_handler)
+        search_entry.show()
+
+        search_bar_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        search_bar_box.pack_start(search_entry, True, True, 0)
+        search_bar_box.show()
+
+        search_bar = Gtk.SearchBar()
+        search_bar.add(search_bar_box)
+        search_bar.connect_entry(search_entry)
+        search_bar.show()
+
+        return search_bar
+
+    def _on_window_key_press(self, window, event, search_bar):
+        if event.type == Gdk.EventType.KEY_PRESS and event.keyval == Gdk.KEY_Escape:
+            search_bar.set_search_mode(False)
+            self.btn_mount_search.set_active(self.search_bar.get_search_mode())
+            return
+
+        if event.type == Gdk.EventType.KEY_PRESS and \
+            (
+                (event.keyval == ord('f') and event.state & Gdk.ModifierType.CONTROL_MASK)
+                or
+                (event.keyval == ord('k') and event.state & Gdk.ModifierType.CONTROL_MASK)
+            ):
+            search_bar.set_search_mode(not search_bar.get_search_mode())
+            self.btn_mount_search.set_active(self.search_bar.get_search_mode())
+            return
+
     def __init__(self):
         self.environment = EnvironmentModel()
+
+        self.list_filter_text = None
+
+        self.search_bar = self._create_search_bar()
 
         self.window = Gtk.Window()
         self.window.set_title('SftpMan')
@@ -249,7 +316,10 @@ class SftpManGtk(object):
         self.list_container_wrapper = Gtk.ScrolledWindow()
         self.list_container_wrapper.add_with_viewport(self._create_list_container())
 
+        self.window.connect("key-press-event", self._on_window_key_press, self.search_bar)
+
         vbox_main = create_vbox()
+        vbox_main.pack_start(self.search_bar, False, True, 0)
         vbox_main.pack_start(self.list_container_wrapper, True, True, 0)
         vbox_main.pack_start(self._create_record_container(), False, False, 0)
 
