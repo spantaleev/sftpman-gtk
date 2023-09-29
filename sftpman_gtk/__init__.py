@@ -2,7 +2,7 @@
 
 import datetime
 
-__version__ = '1.1'
+__version__ = '1.2.0'
 __author__ = 'Slavi Pantaleev'
 __author_email__ = 'slavi@devture.com'
 __website_url__ = 'https://github.com/spantaleev/sftpman-gtk'
