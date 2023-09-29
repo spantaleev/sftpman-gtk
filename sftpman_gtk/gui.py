@@ -167,6 +167,7 @@ class SftpManGtk(object):
 
             # Edit button
             btn_edit = Gtk.Button()
+            btn_edit.set_label('Edit')
             btn_edit.set_image(Gtk.Image.new_from_icon_name('preferences-system', Gtk.IconSize.BUTTON))
             btn_edit.set_always_show_image(False)
             btn_edit.set_tooltip_text("Edit this filesystem's settings")
