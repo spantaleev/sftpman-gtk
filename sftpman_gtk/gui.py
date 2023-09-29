@@ -232,7 +232,7 @@ class SftpManGtk(object):
 
         self.window = Gtk.Window()
         self.window.set_title('SftpMan')
-        self.window.resize(550, 600)
+        self.window.set_default_size(-1, 600)
         self.window.set_position(Gtk.WindowPosition.CENTER)
         self.window.connect('destroy', self.handler_destroy)
 
