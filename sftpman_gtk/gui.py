@@ -51,11 +51,11 @@ class SftpManGtk(object):
             )
             show_warning_message(self.window, msg)
 
-    def handler_mount_by_id(self, btn, system_id):
+    def handler_mount_by_id(self, system_id):
         self._handle_mount(system_id)
         self.refresh_list()
 
-    def handler_unmount_by_id(self, btn, system_id):
+    def handler_unmount_by_id(self, system_id):
         controller = self._get_system_controller_by_id(system_id)
         controller.unmount()
         self.refresh_list()
@@ -126,9 +126,21 @@ class SftpManGtk(object):
 
             hbox = create_hbox()
 
-            icon_name = 'network-server' if is_mounted else 'network-offline'
-            icon = Gtk.Image.new_from_icon_name(icon_name, Gtk.IconSize.SMALL_TOOLBAR)
-            hbox.pack_start(icon, False, True, 10)
+            def on_switch_activated(switch, gparam, system_id):
+                if switch.get_active():
+                    self.handler_mount_by_id(system_id)
+                else:
+                    self.handler_unmount_by_id(system_id)
+
+            switch = Gtk.Switch()
+            switch.set_name('Mount')
+            switch.set_tooltip_text('Mount or unmount this filesystem')
+            switch.props.valign = Gtk.Align.CENTER
+            switch.set_margin_start(10)
+            switch.set_margin_end(10)
+            switch.set_active(is_mounted)
+            switch.connect("notify::active", on_switch_activated, system_id)
+            hbox.pack_start(switch, False, True, 0)
 
             # Sftp system id
             label = Gtk.Label(label=system_id)
@@ -136,34 +148,16 @@ class SftpManGtk(object):
             label.set_size_request(150, 35)
             hbox.pack_start(label, True, True, 0)
 
-            # Open/Mount button
-            if (is_mounted):
-                btn_mount_or_open = Gtk.Button()
-                btn_mount_or_open.set_label('Open')
-                btn_mount_or_open.set_image(Gtk.Image.new_from_icon_name('document-open', Gtk.IconSize.BUTTON))
-                btn_mount_or_open.set_always_show_image(True)
-                btn_mount_or_open.set_tooltip_text('Opens this filesystem')
-                btn_mount_or_open.connect("clicked", self.handler_open_by_id, system_id)
-            else:
-                btn_mount_or_open = Gtk.Button()
-                btn_mount_or_open.set_label('Mount')
-                btn_mount_or_open.set_image(Gtk.Image.new_from_icon_name('network-idle', Gtk.IconSize.BUTTON))
-                btn_mount_or_open.set_always_show_image(True)
-                btn_mount_or_open.set_tooltip_text('Mounts this filesystem')
-                btn_mount_or_open.connect("clicked", self.handler_mount_by_id, system_id)
-            btn_mount_or_open.set_size_request(120, 35)
+            btn_open = Gtk.Button()
+            btn_open.set_label('Open')
+            btn_open.set_image(Gtk.Image.new_from_icon_name('document-open', Gtk.IconSize.BUTTON))
+            btn_open.set_always_show_image(True)
+            btn_open.set_tooltip_text('Opens this filesystem')
+            btn_open.set_sensitive(is_mounted)
+            btn_open.set_size_request(120, 35)
+            btn_open.connect("clicked", self.handler_open_by_id, system_id)
 
-            # Unmount button
-            btn_unmount = Gtk.Button()
-            btn_unmount.set_label('Unmount')
-            btn_unmount.set_image(Gtk.Image.new_from_icon_name('network-offline', Gtk.IconSize.BUTTON))
-            btn_unmount.set_always_show_image(True)
-            btn_unmount.set_tooltip_text('Unmounts this filesystem')
-            if not is_mounted:
-                btn_unmount.set_sensitive(False)
-            else:
-                btn_unmount.connect("clicked", self.handler_unmount_by_id, system_id)
-            btn_unmount.set_size_request(120, 35)
+            hbox.pack_start(btn_open, False, True, 0)
 
             # Edit button
             btn_edit = Gtk.Button()
@@ -174,8 +168,6 @@ class SftpManGtk(object):
             btn_edit.connect("clicked", self.handler_edit, system_id)
             btn_edit.set_margin_end(10)
 
-            hbox.pack_start(btn_mount_or_open, False, True, 0)
-            hbox.pack_start(btn_unmount, False, True, 0)
             hbox.pack_start(btn_edit, False, True, 0)
 
             row = Gtk.ListBoxRow()
