@@ -9,7 +9,7 @@ from gi.repository import Gtk, GLib, GObject, Gdk, GdkPixbuf
 import sftpman_gtk
 
 from sftpman.model import EnvironmentModel, SystemModel, SystemControllerModel
-from sftpman.exception import SftpException, SftpMountException
+from sftpman.exception import SftpException, SftpMountException, SftpConfigException
 from sftpman.helper import shell_exec
 
 from .helper import open_file_browser, show_warning_message, \
@@ -446,7 +446,7 @@ class RecordRenderer(object):
 
     def get_field_definitions(self):
         return (
-            {'id': 'id', 'type': 'textbox', 'title': 'Machine Id', 'disabled': self.added},
+            {'id': 'id', 'type': 'textbox', 'title': 'Identifier', 'disabled': self.added},
             {'id': 'host', 'type': 'textbox', 'title': 'Host', 'disabled': False},
             {'id': 'port', 'type': 'textbox', 'title': 'Port', 'disabled': False},
             {'id': 'user', 'type': 'textbox', 'title': 'Username', 'disabled': False},
@@ -581,6 +581,15 @@ class RecordRenderer(object):
                 show_warning_message(self.window_obj.window, msg)
             return
 
+        if not self.added:
+            # Validation checks below only deal with the model's data
+            # and not with the system as a whole.
+            # When adding a new definition, we'd like to ensure that the id is not a duplicate
+            if self._is_system_id_in_use(self.system.id):
+                msg = 'The identifier (%s) is already in use by another definition!' % self.system.id
+                show_warning_message(self.window_obj.window, msg)
+                return
+
         self.system.save(self.environment)
 
         if is_mounted_before_save:
@@ -602,6 +611,13 @@ class RecordRenderer(object):
         for child in self.window_obj.header_bar.get_children():
             child.set_sensitive(True)
         self.window_obj.vbox_main.remove(self.action_bar)
+
+    def _is_system_id_in_use(self, system_id):
+        try:
+            SystemModel.create_by_id(system_id, self.environment)
+            return True
+        except SftpConfigException:
+            return False
 
     def render(self):
         for child in self.window_obj.record_container.get_children():
