@@ -107,6 +107,21 @@ class SftpManGtk(object):
         system = self._get_system_by_id(system_id)
         RecordRenderer(self, system, added=True).render()
 
+    def handler_delete(self, btn, system_id):
+        system = self._get_system_by_id(system_id)
+        text = 'Delete definition for `%s`?' % system_id
+        dialog = Gtk.MessageDialog(self.window, Gtk.DialogFlags.MODAL, Gtk.MessageType.QUESTION, Gtk.ButtonsType.NONE, text)
+        dialog.add_button(Gtk.STOCK_CANCEL, Gtk.ResponseType.NO)
+        dialog.add_button(Gtk.STOCK_DELETE, Gtk.ResponseType.YES)
+        dialog.set_title(text)
+        response = dialog.run()
+        dialog.destroy()
+        if response == Gtk.ResponseType.YES:
+            controller = SystemControllerModel(system, self.environment)
+            controller.unmount()
+            system.delete(self.environment)
+            self.refresh_list()
+
     def refresh_list(self):
         ids_mounted = self.environment.get_mounted_ids()
 
@@ -159,16 +174,10 @@ class SftpManGtk(object):
 
             hbox.pack_start(btn_open, False, True, 0)
 
-            # Edit button
-            btn_edit = Gtk.Button()
-            btn_edit.set_label('Edit')
-            btn_edit.set_image(Gtk.Image.new_from_icon_name('preferences-system', Gtk.IconSize.BUTTON))
-            btn_edit.set_always_show_image(False)
-            btn_edit.set_tooltip_text("Edit this filesystem's settings")
-            btn_edit.connect("clicked", self.handler_edit, system_id)
-            btn_edit.set_margin_end(10)
+            btn_hamburger = self._create_hamburger_menu_for_system(system_id)
+            btn_hamburger.set_margin_end(10)
 
-            hbox.pack_start(btn_edit, False, True, 0)
+            hbox.pack_start(btn_hamburger, False, True, 0)
 
             row = Gtk.ListBoxRow()
             row.add(hbox)
@@ -180,6 +189,40 @@ class SftpManGtk(object):
             self.list_container.add(label)
 
         self.list_container.show_all()
+
+    def _create_hamburger_menu_for_system(self, system_id):
+        btn_edit = Gtk.ModelButton()
+        btn_edit.set_label('Edit')
+        btn_edit.set_image(Gtk.Image.new_from_icon_name('preferences-system', Gtk.IconSize.MENU))
+        btn_edit.set_always_show_image(False)
+        btn_edit.set_tooltip_text("Edit this filesystem's settings")
+        btn_edit.set_alignment(0, 0.5) # Left-align
+        btn_edit.connect("clicked", self.handler_edit, system_id)
+
+        btn_delete = Gtk.ModelButton()
+        btn_delete.set_label('Delete')
+        btn_delete.set_image(Gtk.Image.new_from_icon_name('edit-delete', Gtk.IconSize.BUTTON))
+        btn_delete.set_always_show_image(True)
+        btn_delete.set_tooltip_text("Deletes this filesystem definition")
+        btn_delete.set_alignment(0, 0.5) # Left-align
+        btn_delete.show()
+        btn_delete.connect("clicked", self.handler_delete, system_id)
+
+        popover_vbox = create_vbox()
+        popover_vbox.pack_start(btn_edit, False, True, 0)
+        popover_vbox.pack_start(btn_delete, False, True, 0)
+        popover_vbox.show_all()
+
+        popover = Gtk.Popover()
+        popover.add(popover_vbox)
+
+        btn_hamburger = Gtk.MenuButton(popover=popover)
+        btn_hamburger.set_label('')
+        btn_hamburger.set_image(Gtk.Image.new_from_icon_name('open-menu-symbolic', Gtk.IconSize.BUTTON))
+        btn_hamburger.set_always_show_image(False)
+        btn_hamburger.set_tooltip_text("Show additional options")
+
+        return btn_hamburger
 
     def show_list(self):
         self.list_container_wrapper.show()
@@ -378,17 +421,8 @@ class RecordRenderer(object):
         btn_back.show()
         btn_back.connect("clicked", self.handler_cancel)
 
-        btn_delete = Gtk.Button()
-        btn_delete.set_label('Delete')
-        btn_delete.set_image(Gtk.Image.new_from_icon_name('edit-delete', Gtk.IconSize.BUTTON))
-        btn_delete.set_always_show_image(True)
-        btn_delete.show()
-        btn_delete.connect("clicked", self.handler_delete)
-
         self.action_bar.pack_start(btn_save)
-        self.action_bar.set_center_widget(btn_back)
-        if self.added:
-            self.action_bar.pack_end(btn_delete)
+        self.action_bar.pack_end(btn_back)
 
         self.window_obj.vbox_main.pack_end(self.action_bar, False, False, 0)
         self.action_bar.show()
@@ -538,20 +572,6 @@ class RecordRenderer(object):
         else:
             for field_id, msg in errors:
                 show_warning_message(self.window_obj.window, msg)
-
-    def handler_delete(self, btn):
-        text = 'Delete definition for `%s`?' % self.system.id
-        dialog = Gtk.MessageDialog(self.window_obj.window, Gtk.DialogFlags.MODAL, Gtk.MessageType.QUESTION, Gtk.ButtonsType.NONE, text)
-        dialog.add_button(Gtk.STOCK_CANCEL, Gtk.ResponseType.NO)
-        dialog.add_button(Gtk.STOCK_DELETE, Gtk.ResponseType.YES)
-        dialog.set_title(text)
-        response = dialog.run()
-        dialog.destroy()
-        if response == Gtk.ResponseType.YES:
-            controller = SystemControllerModel(self.system, self.environment)
-            controller.unmount()
-            self.system.delete(self.environment)
-            self.close()
 
     def handler_cancel(self, btn):
         self.close()
