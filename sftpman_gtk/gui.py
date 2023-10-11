@@ -107,6 +107,11 @@ class SftpManGtk(object):
         system = self._get_system_by_id(system_id)
         RecordRenderer(self, system, added=True).render()
 
+    def handler_clone(self, btn, system_id):
+        system = self._get_system_by_id(system_id)
+        system.id = system.id + '-clone'
+        RecordRenderer(self, system, added=False).render()
+
     def handler_delete(self, btn, system_id):
         system = self._get_system_by_id(system_id)
         text = 'Delete definition for `%s`?' % system_id
@@ -199,6 +204,14 @@ class SftpManGtk(object):
         btn_edit.set_alignment(0, 0.5) # Left-align
         btn_edit.connect("clicked", self.handler_edit, system_id)
 
+        btn_clone = Gtk.ModelButton()
+        btn_clone.set_label('Clone')
+        btn_clone.set_image(Gtk.Image.new_from_icon_name('edit-copy', Gtk.IconSize.MENU))
+        btn_clone.set_always_show_image(False)
+        btn_clone.set_tooltip_text("Duplicate this filesystem's settings into a new filesystem")
+        btn_clone.set_alignment(0, 0.5) # Left-align
+        btn_clone.connect("clicked", self.handler_clone, system_id)
+
         btn_delete = Gtk.ModelButton()
         btn_delete.set_label('Delete')
         btn_delete.set_image(Gtk.Image.new_from_icon_name('edit-delete', Gtk.IconSize.BUTTON))
@@ -210,6 +223,7 @@ class SftpManGtk(object):
 
         popover_vbox = create_vbox()
         popover_vbox.pack_start(btn_edit, False, True, 0)
+        popover_vbox.pack_start(btn_clone, False, True, 0)
         popover_vbox.pack_start(btn_delete, False, True, 0)
         popover_vbox.show_all()
 
