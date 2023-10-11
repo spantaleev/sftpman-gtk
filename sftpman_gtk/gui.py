@@ -411,6 +411,7 @@ class RecordRenderer(object):
         self.window_obj = window_obj
         self.environment = self.window_obj.environment
         self.system = system
+        self.system_id_before = system.id
         self.added = added
 
         self.window_obj.hide_list()
@@ -446,7 +447,7 @@ class RecordRenderer(object):
 
     def get_field_definitions(self):
         return (
-            {'id': 'id', 'type': 'textbox', 'title': 'Identifier', 'disabled': self.added},
+            {'id': 'id', 'type': 'textbox', 'title': 'Identifier'},
             {'id': 'host', 'type': 'textbox', 'title': 'Host', 'disabled': False},
             {'id': 'port', 'type': 'textbox', 'title': 'Port', 'disabled': False},
             {'id': 'user', 'type': 'textbox', 'title': 'Username', 'disabled': False},
@@ -558,13 +559,11 @@ class RecordRenderer(object):
         return [option.strip() for option in widget_text.split(',')]
 
     def handler_save(self, btn):
+        controller = None
+        is_mounted_before_save = False
         if self.added:
             controller = SystemControllerModel(self.system, self.environment)
             is_mounted_before_save = controller.mounted
-            controller.unmount()
-        else:
-            controller = None
-            is_mounted_before_save = False
 
         for field_info in self.rendered_fields:
             widget = field_info['widget']
@@ -581,18 +580,38 @@ class RecordRenderer(object):
                 show_warning_message(self.window_obj.window, msg)
             return
 
-        if not self.added:
-            # Validation checks below only deal with the model's data
-            # and not with the system as a whole.
-            # When adding a new definition, we'd like to ensure that the id is not a duplicate
+        # Validation checks above only deal with the model's data, not with the system as a whole.
+        # We'd like to ensure that the id is NOT a duplicate when:
+        # - adding a brand new definition
+        # - changing the id of an existing definition
+        check_for_id_uniqueness = False
+        if self.added:
+            if self.system.id != self.system_id_before:
+                check_for_id_uniqueness = True
+        else:
+            check_for_id_uniqueness = True
+
+        if check_for_id_uniqueness:
             if self._is_system_id_in_use(self.system.id):
                 msg = 'The identifier (%s) is already in use by another definition!' % self.system.id
                 show_warning_message(self.window_obj.window, msg)
                 return
 
+        if is_mounted_before_save and controller is not None:
+            controller.unmount()
+
         self.system.save(self.environment)
 
+        if self.added and self.system.id != self.system_id_before:
+            # The ID got changed and we saved a new system definition.
+            # Time to purge the old one now.
+            old_system = SystemModel.create_by_id(self.system_id_before, self.environment)
+            old_system.delete(self.environment)
+
         if is_mounted_before_save:
+            # We must create a new controller, because the system definition
+            # (including the ID) may have changed.
+            controller = SystemControllerModel(self.system, self.environment)
             controller.mount()
 
         self.close()
