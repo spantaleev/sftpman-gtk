@@ -558,13 +558,13 @@ class RecordRenderer(object):
         return [option.strip() for option in widget_text.split(',')]
 
     def handler_save(self, btn):
-        if not self.added:
-            controller = None
-            is_mounted_before_save = False
-        else:
+        if self.added:
             controller = SystemControllerModel(self.system, self.environment)
             is_mounted_before_save = controller.mounted
             controller.unmount()
+        else:
+            controller = None
+            is_mounted_before_save = False
 
         for field_info in self.rendered_fields:
             widget = field_info['widget']
@@ -576,16 +576,17 @@ class RecordRenderer(object):
             setattr(self.system, field_info['id'], value)
 
         is_valid, errors = self.system.validate()
-        if is_valid:
-            self.system.save(self.environment)
-
-            if is_mounted_before_save:
-                controller.mount()
-
-            self.close()
-        else:
+        if not is_valid:
             for field_id, msg in errors:
                 show_warning_message(self.window_obj.window, msg)
+            return
+
+        self.system.save(self.environment)
+
+        if is_mounted_before_save:
+            controller.mount()
+
+        self.close()
 
     def handler_cancel(self, btn):
         self.close()
