@@ -27,9 +27,11 @@ def create_vbox():
     return Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=BOX_SPACING)
 
 
-def create_table():
-    table = Gtk.Table(homogeneous=True)
-    table.set_row_spacings(ROW_SPACING)
-    table.set_col_spacings(BOX_SPACING)
-    table.set_margin_top(ROW_SPACING)
-    return table
+def create_grid():
+    widget = Gtk.Grid()
+    widget.set_row_spacing(ROW_SPACING)
+    widget.set_row_homogeneous(True)
+    widget.set_column_spacing(BOX_SPACING)
+    widget.set_margin_top(ROW_SPACING)
+    widget.set_margin_end(10)
+    return widget

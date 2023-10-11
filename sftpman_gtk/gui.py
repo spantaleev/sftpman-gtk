@@ -13,7 +13,7 @@ from sftpman.exception import SftpException, SftpMountException, SftpConfigExcep
 from sftpman.helper import shell_exec
 
 from .helper import open_file_browser, show_warning_message, \
-     create_hbox, create_vbox, create_table
+     create_hbox, create_vbox, create_grid
 
 
 class SftpManGtk(object):
@@ -299,7 +299,7 @@ class SftpManGtk(object):
 
     def _create_record_container(self):
         # This would contain the form entries when adding/editing systems
-        self.record_container = create_hbox()
+        self.record_container = create_vbox()
         return self.record_container
 
     def _create_search_bar(self):
@@ -644,7 +644,7 @@ class RecordRenderer(object):
 
         self.rendered_fields = []
 
-        table = create_table()
+        grid = create_grid()
 
         for row_number, field_info in enumerate(self.get_field_definitions()):
             label = Gtk.Label(label=field_info['title'])
@@ -656,14 +656,15 @@ class RecordRenderer(object):
             if render_callback is None:
                 raise SftpException('Missing renderer for field type %s' % field_info['type'])
             widget = render_callback(field_info)
+            widget.set_hexpand(True)
 
-            table.attach(label, 0, 1, row_number, row_number + 1)
-            table.attach(widget, 1, 3, row_number, row_number + 1)
+            grid.attach(label, 0, row_number, 1, 1)
+            grid.attach(widget, 1, row_number, 1, 1)
 
             field_info['widget'] = widget
             self.rendered_fields.append(field_info)
 
-        self.window_obj.record_container.add(table)
+        self.window_obj.record_container.pack_start(grid, True, True, 0)
         self.window_obj.record_container.show_all()
 
         if not self.added:
