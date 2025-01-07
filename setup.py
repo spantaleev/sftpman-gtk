@@ -2,6 +2,8 @@
 SftpMan GTK
 ===========
 
+⚠️ **Warning**: This CLI application and library has been rewritten in Rust. See https://github.com/spantaleev/sftpman-rs and https://github.com/spantaleev/sftpman-iced-rs. This old Python-based software is no longer maintained.
+
 A GTK frontend for SftpMan, which makes it easy to setup and mount SSHFS/SFTP file systems.
 
 It allows you to define all your SFTP systems and easily mount/unmount them.
